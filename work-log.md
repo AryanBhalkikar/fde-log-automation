@@ -8,7 +8,7 @@ Creating an approach for converting low-level operation logs into segments that 
 
 The above goal is approached by using a combination of deterministic scripts and LLM APIs. 
 
-- Boundary-finding and determining where a task starts and stops is mostly mechanical work and is handled by deterministic scripts. 
+- Boundary-finding and determining when a task starts and stops is mostly mechanical work and is handled by deterministic scripts. 
 - Labeling, grouping or identifying same kind of tasks benefits from an LLM's language and pattern understanding. Hence, this is handled through an LLM. 
 
 The pipeline is:
@@ -35,3 +35,28 @@ The pipeline is:
 ### Next Step
 Implement session reconstruction and inspect real Dataset A event patterns.
 
+
+## Day 2: Event Compression
+
+### Objective
+Reduce the events.jsonl data to a compact representation while preserving useful information for downstream process segmentation.
+
+### What I Did
+Implemented an event-compression layer that:
+
+- Separates events into **mergeable** and **standalone** categories.
+- Merges consecutive keystrokes, mouse actions, and browser clicks when their app, window, and field context remains the same.
+- Reconstructs text input from keystrokes, including backspaces and Enter/submission.
+- Converts keyboard shortcuts into single `shortcut` events.
+- Removes key-release events and redundant app-switch events where the process did not actually change.
+- Retains relevant context and payloads such as application, window title, URL, screen text, clicked elements, form fields, clipboard content, and app transitions.
+
+### Why
+The raw logs are too granular for analysis. Keeping individual keystrokes and clicks separately would add noise and increase the amount of data passed to later stages.
+
+The goal is to compress the representation while keeping the information. The signals that may help identify what the user was doing and where the context changed are preserved and repetitive low-level events are removed.
+
+The current implementation reduces approximately 2,800 raw events to ~850 events (~70% reduction).
+
+### Next
+Use the compressed events as the input to boundary detection and evaluate whether important process-level signals were preserved.

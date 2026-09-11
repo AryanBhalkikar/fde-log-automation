@@ -1,2 +1,5 @@
 # ignore dataset directories
 data/
+
+# system specific files
+.DS_Store
