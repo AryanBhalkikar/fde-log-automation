@@ -56,6 +56,7 @@ function mergeBuffer(buffer){
         start: first.start,
         end: last.end,
         app: first.app,
+        process_name: first.process_name,
         window_title: first.window_title,
         url: first.url,
         extracted_text: first.extracted_text,
@@ -82,6 +83,7 @@ function getFilteredEvent(event) {
         start: event.timestamp_iso,
         end: event.timestamp_iso,
         app: event.context?.active_app?.app_name,
+        process_name: event.context?.active_app?.process_name,
         window_title: event.context?.active_app?.window_title,
         url: event.context?.active_browser_tab?.url,
         extracted_text: event.context?.extracted_text,
@@ -100,7 +102,9 @@ function getFilteredPayload(event) {
                 text_content: event.payload?.text_content ?? null 
             };
         case "browser_navigation":
-            return { url: event.payload?.url ?? event.context?.active_browser_tab?.url };
+            return { 
+                title: event.context?.active_browser_tab?.title ?? null
+            };
         case "keystroke":
             return { 
                 field: event.payload?.target_field?.name ??
@@ -119,6 +123,7 @@ function getFilteredPayload(event) {
                 event.payload?.element?.attributes?.placeholder ??
                 "",
                 element_tag: event.payload?.element?.tag ?? null,
+                click_text_content: event.payload?.element?.text_content ?? null
             };
         case "browser_form_input":
             return {
@@ -127,6 +132,11 @@ function getFilteredPayload(event) {
                 event.payload?.element?.attributes?.placeholder ??
                 "",
                 value: event.payload?.value ?? null,
+            };
+        case "browser_tab_event":
+            return {
+                title: event.context?.active_browser_tab?.title ?? null,
+                tab_action: event.payload?.action ?? null
             };
         default:
             return undefined;
@@ -157,7 +167,8 @@ function compress(events){
             continue;
         }
 
-        if (event.event_type === "keystroke" && isShortcut(event.payload) && event.payload.key_action === "press"){
+        if (event.event_type === "keystroke" && 
+            isShortcut(event.payload) && event.payload.key_action === "press"){
             clearBuffer();
 
             const m = event.payload.modifiers;

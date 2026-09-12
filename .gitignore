@@ -1,5 +1,8 @@
 # ignore dataset directories
 data/
 
+# ignore files printed to test ouput of functions
+testOutputs/
+
 # system specific files
 .DS_Store
