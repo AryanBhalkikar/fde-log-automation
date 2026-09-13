@@ -63,6 +63,7 @@ function mergeBuffer(buffer){
         ms_since_last_event: first.ms_since_last_event,
         count: buffer.length,
         field: first.payload?.field ?? null,
+        payload: first.payload
     }
 
     if (first.type === "keystroke") {

@@ -95,3 +95,48 @@ The second compression step is necessary because LLM does not need every low-lev
 
 ### Next
 Run the segmentation on Dataset A and compare the resulting boundaries with the ground truth and compute IOU (Intersection Over Union) score.
+
+
+## Day 4: Heuristic Refinement and Dataset A Evaluation
+
+### Objective
+
+Improve the segmentation approach and build a reliable way to measure how well the predicted segments match the ground truth.
+
+### What I Did
+
+- Modified the boundary scoring logic to use:
+  - time gaps
+  - route changes
+  - window title changes
+  - application changes
+  - form submission / dialog closure
+- Changed how these signals are combined to avoid overcounting related changes.
+- Added special handling for fast application switches and clipboard activity.
+- Created method to quantitatively evaluate output against ground truth. 
+
+### Evaluation
+
+Implemented segment matching using Intersection over Union (IoU).
+
+Instead of calculating one global IoU across the entire session, the best matching predicted segment for each ground-truth segment was calculated and then the mean was taken. This gives a better view of how well each business-process executions are being recovered. This was implemented through a two-pointer interval matching algorithm.
+
+### Challenges Faced
+
+- The previous heuristic was creating too many segments. For example, one application switch could also cause a window title and route change, so adding all three scores treated one real change as three separate signals. The way these different signals are combined was changed.
+
+- I also made application switches dependent on context. For example, a very fast switch after clipboard activity is probably part of a copy-paste action within the same process.
+
+- Some ground-truth intervals had `null` end timestamps, which resulted in invalid time intervals. These were being treated as zero-IoU cases and were pulling the average score down incorrectly.
+
+- After identifying and handling these invalid intervals, the current mean IoU is approximately 0.48 to 0.50.
+
+### Decisions
+
+At this point, further tuning of deterministic thresholds is giving diminishing returns. The remaining mismatches in overlap are difficult to solve using only time and application-level signals because deciding whether two actions belong to the same task requires understanding their context.
+
+Therefore, I decided to move to the next stage from deterministic segmentation to LLM-based context aware grouping.
+
+### Next
+
+Use the compressed event timelines as input to an LLM and evaluate whether context-aware task identification and grouping can improve the IoU on Dataset A.
