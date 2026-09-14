@@ -1,4 +1,4 @@
-const MAXLENGTH = 100;
+const MAXLENGTH = 75;
 
 function getCleanString(str){
     if (str === null || str === undefined) {
@@ -17,7 +17,6 @@ function getCleanString(str){
 function formatSegmentForLLM(segment) {
     const start = segment[0].start;
     const end = segment[segment.length - 1].end;
-    const durationSec = Math.round((new Date(end) - new Date(start)) / 1000);
 
     let activeApp = null;
     let activeTitle = null;
@@ -28,7 +27,7 @@ function formatSegmentForLLM(segment) {
     for (const ev of segment) {
 
         if (ev.type === "app_switch") {
-            timeline.push(`Switched apps from ${ev.payload?.from?.app_name ?? "unknown"} to ${ev.payload?.to?.app_name ?? "unknown"}`);
+            timeline.push(`Switched apps: ${ev.payload?.from?.app_name ?? "unknown"} to ${ev.payload?.to?.app_name ?? "unknown"}`);
         }
 
         const appChanged = ev.app && ev.app !== activeApp;
@@ -56,7 +55,7 @@ function formatSegmentForLLM(segment) {
 
         if (ev.extracted_text?.text) {
             const cleanedExtractedText = getCleanString(ev.extracted_text.text);
-            timeline.push(`[OCR Text on Screen]: "${cleanedExtractedText}"`);
+            timeline.push(`[Text on Screen]: "${cleanedExtractedText}"`);
         }
 
         switch (ev.type) {
@@ -71,7 +70,7 @@ function formatSegmentForLLM(segment) {
                 break;
 
             case "shortcut":
-                timeline.push(`Executed shortcut: ${ev.combo}`);
+                timeline.push(`Ran shortcut: ${ev.combo}`);
                 break;
 
             case "browser_click":
@@ -104,8 +103,6 @@ function formatSegmentForLLM(segment) {
     return {
         start,
         end,
-        duration_sec: durationSec,
-        total_events: segment.length,
         timeline,
     };
 }

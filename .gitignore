@@ -1,8 +1,16 @@
 # ignore dataset directories
 data/
 
+# ignore dependencies
+node_modules/
+
 # ignore files printed to test ouput of functions
 testOutputs/
+intermediate/
+
+# ignore secrets
+.env
 
 # system specific files
 .DS_Store
+dump.rdb

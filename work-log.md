@@ -140,3 +140,40 @@ Therefore, I decided to move to the next stage from deterministic segmentation t
 ### Next
 
 Use the compressed event timelines as input to an LLM and evaluate whether context-aware task identification and grouping can improve the IoU on Dataset A.
+
+
+## Day 5: LLM-Based Context-Aware Labelling
+
+### Objective
+
+Move from deterministic segmentation to context-aware task identification using an LLM.
+
+### What I Did
+
+- Restructured the project into separate components for:
+  - mathematical analysis and validation
+  - deterministic processing
+  - LLM-based labelling
+- Added a BullMQ producer/worker pipeline to send compressed session segments to the LLM asynchronously.
+- Added rate limiting so LLM requests can be throttled and concurrency can be increased later if required.
+- Designed the LLM prompt to identify:
+  - a consistent process label
+  - case IDs
+  - whether a segment resumes an earlier task
+  - confidence
+  - unclear/noise segments
+- Successfully received descriptive labels from the LLM and identified cases where a process was paused and later resumed.
+
+### Why
+
+The deterministic scripts have a limit to how useful they are since they rely on fixed time-based or specific action-based signals. The LLM can use the combination of information as well as screen text to determine whether different segments belong to the same task.
+
+BullMQ separates LLM execution from the main processing. This makes rate limiting and asynchronous processing possible.
+
+### Main Challenge
+
+The main constraint was the LLM token limit. The input must have the signals most useful for identifying tasks while removing redundant or low-value details. This makes deciding which information to use an important part of the pipeline rather than sending more data to the model.
+
+### Next
+
+Validate the LLM labels and task resumption decisions against Dataset A ground truth using the IoU-based evaluation.
