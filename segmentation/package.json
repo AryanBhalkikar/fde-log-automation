@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test-segment-a": "node scripts/runOnDatasetA.js"
+    "test-segment": "node scripts/runOnDatasetA.js"
   },
   "keywords": [],
   "author": "",

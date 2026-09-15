@@ -1,9 +1,8 @@
 import { existsSync, readFileSync } from "fs";
 
-function loadPredictedIntervals(){
-    const filePath = "../intermediate/deterministicSegmentationOutput.jsonl";
+function loadPredictedIntervals(filePath){
     if (!existsSync(filePath)){
-        console.error(`Intermediate output not found.`);
+        console.error(`Intermediate output not found: ${filePath}`);
         process.exit(1);
     }
 

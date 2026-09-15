@@ -2,10 +2,12 @@ import { existsSync, readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
-function loadPredictedIntervals() {
-    const currentFile = fileURLToPath(import.meta.url);
-    const rootDir = path.resolve(path.dirname(currentFile), '../..');
-    const filePath = path.join(rootDir, 'intermediate', 'deterministicSegmentationOutput.jsonl');
+function loadPredictedIntervals(filePath) {
+    if (!filePath) {
+        const currentFile = fileURLToPath(import.meta.url);
+        const rootDir = path.resolve(path.dirname(currentFile), '../..');
+        filePath = path.join(rootDir, 'intermediate', 'deterministicSegmentationOutput.jsonl');
+    }
 
     if (!existsSync(filePath)) {
         console.error(`Intermediate output not found at: ${filePath}`);

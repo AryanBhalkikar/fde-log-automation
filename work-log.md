@@ -1,4 +1,4 @@
-## Day 1: Designing the Approach
+## 10 Sep 26: Designing the Approach
 
 ### Objective:
 
@@ -36,7 +36,7 @@ The pipeline is:
 Implement session reconstruction and inspect real Dataset A event patterns.
 
 
-## Day 2: Event Compression
+## 11 Sep 26: Event Compression
 
 ### Objective
 Reduce the events.jsonl data to a compact representation while preserving useful information for downstream process segmentation.
@@ -62,7 +62,7 @@ The current implementation reduces approximately 2,800 raw events to ~850 events
 Use the compressed events as the input to boundary detection and evaluate whether important process-level signals were preserved.
 
 
-## Day 3: Heuristic Segmentation & LLM Input Preparation
+## 12 Sep 26: Heuristic Segmentation & LLM Input Preparation
 
 ### Objective
 Build the segmentation layer and convert each segment into a compact representation suitable for LLM interpretation.
@@ -97,7 +97,7 @@ The second compression step is necessary because LLM does not need every low-lev
 Run the segmentation on Dataset A and compare the resulting boundaries with the ground truth and compute IOU (Intersection Over Union) score.
 
 
-## Day 4: Heuristic Refinement and Dataset A Evaluation
+## 13 Sep 26: Heuristic Refinement and Dataset A Evaluation
 
 ### Objective
 
@@ -129,7 +129,7 @@ Instead of calculating one global IoU across the entire session, the best matchi
 
 - Some ground-truth intervals had `null` end timestamps, which resulted in invalid time intervals. These were being treated as zero-IoU cases and were pulling the average score down incorrectly.
 
-- After identifying and handling these invalid intervals, the current mean IoU is approximately 0.48 to 0.50.
+- After identifying and handling these invalid intervals, the current mean IoU is approximately 0.48.
 
 ### Decisions
 
@@ -142,7 +142,7 @@ Therefore, I decided to move to the next stage from deterministic segmentation t
 Use the compressed event timelines as input to an LLM and evaluate whether context-aware task identification and grouping can improve the IoU on Dataset A.
 
 
-## Day 5: LLM-Based Context-Aware Labelling
+## 14 Sep 26: LLM-Based Context-Aware Labelling
 
 ### Objective
 
@@ -177,3 +177,39 @@ The main constraint was the LLM token limit. The input must have the signals mos
 ### Next
 
 Validate the LLM labels and task resumption decisions against Dataset A ground truth using the IoU-based evaluation.
+
+
+## 15 Sept 26: Full Dataset Pipeline and Automation Planning:
+
+### Objective
+
+Make the complete pipeline run across all sessions and evaluate whether LLM-based processing improves segmentation quality at dataset level.
+
+### What I Did
+
+- Extended the pipeline to process every session in a dataset rather than testing individual sessions.
+- Calculated the average IoU across all sessions before and after LLM-based processing.
+- The average IoU increased from the deterministic approach to 0.61 after LLM processing, showing an  improvement from adding context-based processing.
+
+### Challenge
+
+The IoU score was affected by the size of the LLM used. Larger models achieved scores of around 0.68 on average, but their API token limits were too low for processing all sessions.
+
+I had to use smaller models which were less accurate but within the API limits. This caused a trade-off between segmentation accuracy and scalability.
+
+### Automation Planning
+
+The next stage is to analyse Dataset B and rank processes based on how suitable they are for automation.
+
+The main factors will be:
+
+- **Total time spent:** How much staff time is spent on the task overall. More time means more ROI.
+- **Frequency:** How often the task is performed. Frequent tasks imply more ROI.
+- **Duration variation:** How much execution time changes between cases. Low variation suggests a predictable process and high variation may indicate exceptions or decision-making.
+- **Application-switch frequency:** How often workers move between applications during one execution. Frequent switching can indicate repetitive movement or copy-pasting. RPA could be used here.
+
+Highly frequent and low variation tasks are good for deterministic scripts, while tasks with large variation may require more context-aware or LLM-based automation because the worker may be making decisions or handling exceptions.
+
+### Next
+
+Run this automation analysis on Dataset B and identify the highest-value feasible automation candidates.

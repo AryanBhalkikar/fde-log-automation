@@ -12,7 +12,6 @@ function getIOUScore(gtIntervals, predictedIntervals){
     let IouCount = 0;
     for (let i = 0; i < gtIntervals.length; i++){
         let maxIou = 0;
-        let overlapCount = 0;
         const trueStart = gtIntervals[i].start;
         const trueEnd = gtIntervals[i].end;
         
@@ -28,15 +27,12 @@ function getIOUScore(gtIntervals, predictedIntervals){
             const predEnd = toMs(predEndStr);
             if (!isOverlapping(trueStart, trueEnd, predStart, predEnd)) continue;
 
-            overlapCount++;
-
             const intersection = Math.min(trueEnd, predEnd) - Math.max(trueStart, predStart);
             const union = Math.max(trueEnd, predEnd) - Math.min(trueStart, predStart);
             const iou = (union > 0)?(intersection / union) : 0;
 
             maxIou = Math.max(maxIou, iou);
         }
-        console.log(`Overlap Count = ${overlapCount}`);
         IouSum += maxIou;
         IouCount += 1;
     }

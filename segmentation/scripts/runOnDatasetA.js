@@ -4,42 +4,61 @@ import getSegments from "../src/segmentHeuristic.js";
 import compressSegment from "../src/compressSegment.js";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 
-const sessionDirPath = process.argv[2];
+const dataset = process.argv[2]?.toLowerCase();
 
-if (!sessionDirPath) {
-  console.error("Please use: npm run test-segment-a <path-to-session-folder>");
+if (dataset !== "a" && dataset !== "b") {
+  console.error("Please use: npm run test-segment -- <a|b>");
   process.exit(1);
 }
 
-const events = await loadSessionEvents(path.resolve(sessionDirPath));
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const datasetName = `dataset_${dataset}`;
+const datasetDirPath = path.resolve(scriptDir, `../../data/${datasetName}`);
+const outputDirPath = path.resolve(scriptDir, `../../intermediate/deterministic_output/${datasetName}`);
 
-console.log(`Loaded ${events.length} events`);
-console.log("First event:", events[0].timestamp_iso, events[0].event_type);
-console.log("Last event:", events[events.length - 1].timestamp_iso, events[events.length - 1].event_type);
+fs.mkdirSync(outputDirPath, { recursive: true });
 
-console.log(`Loaded gt_manifest.json intervals`);
+const sessionEntries = fs.readdirSync(datasetDirPath, { withFileTypes: true });
 
-// Filter and compress events to extract valuable info:
+for (const sessionEntry of sessionEntries) {
+  if (!sessionEntry.isDirectory()) continue;
 
-const compressedEvents = compress(events);
+  const sessionName = sessionEntry.name;
+  const sessionDirPath = path.join(datasetDirPath, sessionName);
+  const events = await loadSessionEvents(sessionDirPath);
 
-// boundary detection and grouping: 
+  console.log(`\nProcessing ${datasetName}/${sessionName}`);
+  console.log(`Loaded ${events.length} events`);
 
-const segmentedEvents = getSegments(compressedEvents);
+  if (events.length === 0) {
+    console.warn("Skipping session because it contains no events.");
+    continue;
+  }
 
-// Compress output further to feed into LLM:
+  console.log("First event:", events[0].timestamp_iso, events[0].event_type);
+  console.log("Last event:", events[events.length - 1].timestamp_iso, events[events.length - 1].event_type);
 
-const compressedSegmentedEvents = compressSegment(segmentedEvents);
+  // Filter and compress events to extract valuable info:
+  const compressedEvents = compress(events);
 
-const stream1 = fs.createWriteStream('./testOutputs/compressedSegmentationOutput.jsonl');
-const stream2 = fs.createWriteStream('../intermediate/deterministicSegmentationOutput.jsonl');
+  // boundary detection and grouping:
+  const segmentedEvents = getSegments(compressedEvents);
 
-compressedSegmentedEvents.forEach(item => {
-  const line = JSON.stringify(item) + '\n';
-  stream1.write(line);
-  stream2.write(line);
-});
+  // Compress output further to feed into LLM:
+  const compressedSegmentedEvents = compressSegment(segmentedEvents);
 
-stream1.end(() => console.log('JSONL local output file successfully created!'));
-stream1.end(() => console.log('JSONL output file successfully created!'));
+  
+  const outputPath = path.join(
+    outputDirPath,
+    `${datasetName}_${sessionName}.jsonl`
+  );
+
+  const output = compressedSegmentedEvents
+    .map(item => JSON.stringify(item))
+    .join("\n");
+
+  fs.writeFileSync(outputPath, output ? `${output}\n` : "");
+  console.log(`JSONL output file successfully created: ${outputPath}`);
+}
