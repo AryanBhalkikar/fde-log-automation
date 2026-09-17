@@ -73,7 +73,7 @@ Build the segmentation layer and convert each segment into a compact representat
   - application change
   - window-title change
   - browser route change
-- The segmentation is based on threshold that splits the compressed event when the combined score reaches `4`.
+- The segmentation is based on threshold that splits the compressed event when the combined score reaches 4.
 - Implemented a second compression layer that converts each segment into a human-readable timeline containing:
   - duration and event count
   - application/window/URL context changes

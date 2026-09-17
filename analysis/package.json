@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test-validate-segment": "node scripts/runValidation.js",
-    "test-validate-llm": "node scripts/runValidationOnLabelledOutput.js"
+    "test-validate-llm": "node scripts/runValidationOnLabelledOutput.js",
+    "variation-stats": "node src/variationStats.js"
   },
   "keywords": [],
   "author": "",

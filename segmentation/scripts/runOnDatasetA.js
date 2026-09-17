@@ -17,8 +17,13 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const datasetName = `dataset_${dataset}`;
 const datasetDirPath = path.resolve(scriptDir, `../../data/${datasetName}`);
 const outputDirPath = path.resolve(scriptDir, `../../intermediate/deterministic_output/${datasetName}`);
+const segmentedEventsDirPath = path.resolve(
+  scriptDir,
+  `../../intermediate/deterministic_output/segmented_events/${datasetName}`
+);
 
 fs.mkdirSync(outputDirPath, { recursive: true });
+fs.mkdirSync(segmentedEventsDirPath, { recursive: true });
 
 const sessionEntries = fs.readdirSync(datasetDirPath, { withFileTypes: true });
 
@@ -45,6 +50,12 @@ for (const sessionEntry of sessionEntries) {
 
   // boundary detection and grouping:
   const segmentedEvents = getSegments(compressedEvents);
+
+  const segmentedEventsPath = path.join(
+    segmentedEventsDirPath,
+    `${datasetName}_${sessionName}.json`
+  );
+  fs.writeFileSync(segmentedEventsPath, JSON.stringify(segmentedEvents, null, 2));
 
   // Compress output further to feed into LLM:
   const compressedSegmentedEvents = compressSegment(segmentedEvents);

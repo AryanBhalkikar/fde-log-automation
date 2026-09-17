@@ -21,7 +21,7 @@ const deterministicDirPath = path.resolve(
 );
 const labelledDirPath = path.resolve(
   scriptDir,
-  `../../intermediate/llm_labelling_output/${datasetName}_2`
+  `../../intermediate/llm_labelling_output/${datasetName}`
 );
 const sessionEntries = fs.readdirSync(datasetDirPath, { withFileTypes: true });
 let iouSum = 0;
