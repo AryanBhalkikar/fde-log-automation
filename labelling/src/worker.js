@@ -30,7 +30,7 @@ const labellingWorker = new Worker('labelling-queue', async(job) => {
         const { systemPrompt, userContent, responseSchema } = buildSessionPrompt(segments);
 
         const response = await gemini.models.generateContent({
-            model: "gemini-3.5-flash",
+            model: "gemini-3.5-flash-lite",
             contents: [{ role: "user", parts: [{ text: userContent }] }],
             config: {
                 systemInstruction: systemPrompt,

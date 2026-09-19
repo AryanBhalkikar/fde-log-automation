@@ -58,6 +58,9 @@ The goal is to compress the representation while keeping the information. The si
 
 The current implementation reduces approximately 2,800 raw events to ~850 events (~70% reduction).
 
+### Generative AI Use
+Generative AI was used to help scan and determine the most important fields from the large amounts of data present in dataset_a. 
+
 ### Next
 Use the compressed events as the input to boundary detection and evaluate whether important process-level signals were preserved.
 
@@ -73,7 +76,7 @@ Build the segmentation layer and convert each segment into a compact representat
   - application change
   - window-title change
   - browser route change
-- The segmentation is based on threshold that splits the compressed event when the combined score reaches 4.
+- The segmentation is based on threshold that splits the compressed event when the combined score reaches 6.
 - Implemented a second compression layer that converts each segment into a human-readable timeline containing:
   - duration and event count
   - application/window/URL context changes
@@ -136,6 +139,9 @@ Instead of calculating one global IoU across the entire session, the best matchi
 At this point, further tuning of deterministic thresholds is giving diminishing returns. The remaining mismatches in overlap are difficult to solve using only time and application-level signals because deciding whether two actions belong to the same task requires understanding their context.
 
 Therefore, I decided to move to the next stage from deterministic segmentation to LLM-based context aware grouping.
+
+### Generative AI Use
+Generative AI was used to help determine which mathematical tool or metric would be best to perform the validation. The IOU algorithm was determined to be the best suited. 
 
 ### Next
 
@@ -209,6 +215,9 @@ The main factors will be:
 - **Application-switch frequency:** How often workers move between applications during one execution. Frequent switching can indicate repetitive movement or copy-pasting. RPA could be used here.
 
 Highly frequent and low variation tasks are good for deterministic scripts, while tasks with large variation may require more context-aware or LLM-based automation because the worker may be making decisions or handling exceptions.
+
+### Generative AI Use
+Generative AI was used as a coding assistant to help expand the pipeline to include all sessions. This ensured that data transfer between the segmentation and labelling packages was consistant and directory paths were correct.
 
 ### Next
 
@@ -311,6 +320,9 @@ The prototype interface and workflow were based on information observed in Datas
 
 Using a Playwright script is appropriate for this process because the observed workflow is browser-based and relatively consistent. A deterministic browser automation also avoids introducing unnecessary LLM complexity since the process appears standardized.
 
+### Generative AI Use
+Generative AI was used to build and design the webpage HTML and CSS. 
+
 ### Next
 
 Complete the Playwright automation and test it on representative leave applications.
@@ -329,6 +341,7 @@ Turn the workflow into a working automated script based on the observations from
 - It fills the approval message using the same template observed in Dataset B, replacing '{type}' and '{date}' with the request values.
 - It enters the message into the approval field and clicks 'OK'. This is consistant with the workflow observed in dataset_b's data.
 - Added batch processing so the script continues until all pending requests are completed.
+- Updated report.md
 
 ### Why
 
