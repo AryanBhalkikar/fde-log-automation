@@ -47,7 +47,7 @@ Implemented an event-compression layer that:
 - Separates events into mergeable and standalone categories.
 - Merges consecutive keystrokes, mouse actions, and browser clicks when their app, window, and field context remains the same.
 - Reconstructs text input from keystrokes, including backspaces and Enter/submission.
-- Converts keyboard shortcuts into single `shortcut` events.
+- Converts keyboard shortcuts into single 'shortcut' events.
 - Removes key-release events and redundant app-switch events where the process did not actually change.
 - Retains relevant context and payloads such as application, window title, URL, screen text, clicked elements, form fields, clipboard content, and app transitions.
 
@@ -127,7 +127,7 @@ Instead of calculating one global IoU across the entire session, the best matchi
 
 - I also made application switches dependent on context. For example, a very fast switch after clipboard activity is probably part of a copy-paste action within the same process.
 
-- Some ground-truth intervals had `null` end timestamps, which resulted in invalid time intervals. These were being treated as zero-IoU cases and were pulling the average score down incorrectly.
+- Some ground-truth intervals had null end timestamps, which resulted in invalid time intervals. These were being treated as zero-IoU cases and were pulling the average score down incorrectly.
 
 - After identifying and handling these invalid intervals, the current mean IoU is approximately 0.48.
 
@@ -213,3 +213,133 @@ Highly frequent and low variation tasks are good for deterministic scripts, whil
 ### Next
 
 Run this automation analysis on Dataset B and identify the highest-value feasible automation candidates.
+
+
+## 16 Sept 26: Process Frequency, Duration and Variation Analysis:
+
+### Objective
+
+Start analysing the identified processes in Dataset B to determine which ones should receive higher automation priority and also identify the best method of automation.
+
+### What I Did
+
+- Calculated the execution count and total time spent for every process label.
+- Used these measures as an initial way to identify high-impact processes. Processes that occur more often and consume more total time represent more potential value from automation.
+
+### Process Variation Analysis
+
+I first tried to measure variation by creating an ordered execution path for each process, based on the main apps and routes and URLs used.
+
+I then compared the paths of different segments with the same label to determine how consistently the process followed the same sequence.
+
+### Challenge Faced
+
+This approach was too sensitive to small differences in execution order. A process could follow almost the same workflow but have one minor deviation, causing the complete path comparison to give a very low similarity score. Since people generally do not follow a strict sequence of operations while working, this method was not effective in determining the similarity score of a process.
+
+### Decision
+
+The ordered-path approach was dropped.
+
+Instead, I plan to represent each execution using a set of the main applications and routes/URLs involved. Executions with the same label can then be compared based on the overlap of these sets.
+
+This removes dependence on execution order and should better capture if two executions use the same systems even when the worker performs some steps in a different order or with minor deviations. 
+
+### Next
+
+Implement the set-based similarity measure and use it with frequency and total duration to identify the strongest automation candidates and automation methods.
+
+
+## 17 Sept 2026: Process Variation Analysis Using Set Similarity
+
+### Objective
+
+Measure how consistent different executions of the same process are.
+
+### What I Did
+
+- Implemented a set-based representation of each process using the main app and route combinations involved.
+- Grouped all executions by their LLM-generated label.
+- Compared executions with the same label using:
+
+  `similarity = intersection / union`
+
+- Calculated the average pairwise similarity for each process.
+- Generated variation statistics for Dataset B, including the number of executions for each label and their average similarity.
+
+### Why
+
+In this method, two executions are considered similar when they involve mostly similar applications and routes. This gives a better idea of process consistency and can help identify highly standardized processes versus processes with greater variation.
+
+### Next
+
+Combine process frequency, total time consumed, and process similarity to identify and prioritize the most promising automation candidates.
+
+
+## 18 Sept 2026: Automation Candidate Selection and Prototype
+
+### Objective
+
+Use the Dataset B process analysis to select a automation process and start building its prototype.
+
+### Candidate Analysis
+
+I compared processes using frequency, total time consumed and the similarity between executions of the same process. The following are some of the statistics observed:
+
+| Process | Executions | Total Time (min) | Avg. Similarity |
+|---|---:|---:|---:|
+| invoice_reconciliation | 21 | 17.2 | 0.495 |
+| contract_management | 14 | 15.3 | 0.595 |
+| leave_application_approval | 17 | 11.5 | 0.718 |
+| social_insurance_processing | 12 | 12.9 | 0.446 |
+| onboarding_verification | 8 | 8.8 | 0.791 |
+
+### Decision
+
+I selected leave_application_approval as the automation candidate.
+
+It has a relatively high number of executions and total time consumption. Hence automation could affect a meaningful amount of work. Its similarity score is high, indicating that different executions tend to follow a similar structure.
+
+This combination is useful because a highly repetitive process is easier to automate with a deterministic script. Therefore, automating this process offers a good ROI to the client.
+
+### Prototype
+
+I decided to build a leave-approval web page and automate it using playwright.
+
+The prototype interface and workflow were based on information observed in Dataset B. This includes browser clicks, DOM element information, screen text, application/window names and URLs. The leave application details and approval messages were also taken from the screen information observed in the dataset.
+
+### Why This Approach
+
+Using a Playwright script is appropriate for this process because the observed workflow is browser-based and relatively consistent. A deterministic browser automation also avoids introducing unnecessary LLM complexity since the process appears standardized.
+
+### Next
+
+Complete the Playwright automation and test it on representative leave applications.
+
+
+## 19 Sept 2026: Playwright Automation Prototype
+
+### Objective
+
+Turn the workflow into a working automated script based on the observations from Dataset B.
+
+### What I Did
+
+- Implemented the Playwright automation for the leave approval page.
+- The script reads the leave type and date for each pending request.
+- It fills the approval message using the same template observed in Dataset B, replacing '{type}' and '{date}' with the request values.
+- It enters the message into the approval field and clicks 'OK'. This is consistant with the workflow observed in dataset_b's data.
+- Added batch processing so the script continues until all pending requests are completed.
+
+### Why
+
+The workflow for leave_application_approval observed in Dataset B is repetitive and browser-based, making it a good fit for deterministic browser automation. The prototype does not need an LLM since the observed steps and approval response can be reproduced using fixed rules.
+
+A particularly important finding was that 100% of the observed resolution text in Dataset B was the same fixed boilerplate approval message ("...no issues, approved"). This shows that the approval response does not vary based on the individual case, further supporting deterministic automation.
+
+### Result
+
+The Playwright script is working successfully and can process the leave applications automatically from the page.
+
+### Next
+
+Test the prototype against the observed workflow, document what manual work remains and ROI.

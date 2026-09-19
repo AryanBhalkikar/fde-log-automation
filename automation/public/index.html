@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勤怠・休暇申請 承認 - HR人事給与システム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="topbar">
+        <span class="topbar-title">HR人事給与システム</span>
+        <span class="topbar-user">田中 麻里・人事マネージャー</span>
+    </header>
+
+    <main class="page">
+        <h1>勤怠・休暇申請承認</h1>
+
+        <div class="page-actions">
+            <button id="run-batch-approval" class="btn-batch">Run Batch Approval</button>
+        </div>
+
+        <section class="template-panel">
+            <label for="note-template">承認メッセージ テンプレート</label>
+            <textarea id="note-template" rows="2">勤怠申請確認。種別：{type}。取得日：{date}。問題なし承認。</textarea>
+            <p class="template-hint">{type} と {date} は各申請の内容に置き換わります。</p>
+        </section>
+
+        <table class="request-table">
+            <thead>
+                <tr>
+                    <th>社員ID</th>
+                    <th>氏名</th>
+                    <th>申請種別</th>
+                    <th>取得日</th>
+                    <th>ステータス</th>
+                    <th>承認メッセージ</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="request-rows"></tbody>
+        </table>
+    </main>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

@@ -16,6 +16,11 @@ if (dataset !== "a" && dataset !== "b") {
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const datasetName = `dataset_${dataset}`;
 const datasetDirPath = path.resolve(scriptDir, `../../data/${datasetName}`);
+if (!fs.existsSync(datasetDirPath)) {
+  console.error(`Missing required dataset directory: ${datasetDirPath}`);
+  console.error("Expected format: data/dataset_<a|b>/<session>/chunk_<name>/events.jsonl");
+  process.exit(1);
+}
 const outputDirPath = path.resolve(scriptDir, `../../intermediate/deterministic_output/${datasetName}`);
 const segmentedEventsDirPath = path.resolve(
   scriptDir,

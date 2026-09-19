@@ -9,6 +9,7 @@ function toMs(isoOrUtcString) {
 const currentFile = fileURLToPath(import.meta.url);
 const rootDir = path.resolve(path.dirname(currentFile), '../..');
 const inputDir = path.join(rootDir, 'intermediate', 'llm_labelling_output', 'dataset_b');
+fs.mkdirSync(inputDir, { recursive: true });
 const inputFiles = fs.readdirSync(inputDir).filter((fileName) => fileName.endsWith('.json'));
 
 const finalOutputSegments = [];

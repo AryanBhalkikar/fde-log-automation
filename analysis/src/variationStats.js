@@ -17,6 +17,8 @@ const labelledOutputDir = path.join(
 	"llm_labelling_output",
 	datasetName
 );
+fs.mkdirSync(segmentedEventsDir, { recursive: true });
+fs.mkdirSync(labelledOutputDir, { recursive: true });
 
 const segmentedFiles = fs.readdirSync(segmentedEventsDir)
 	.filter((fileName) => fileName.endsWith(".json"))
@@ -65,8 +67,6 @@ for (const fileName of segmentedFiles) {
 	for (let i = 0; i < labelledEvents.length; i++) {
 		const { label, case_id } = labelledEvents[i];
 		const actions = segmentedEvents[i];
-
-		if (label === "noise" || label === "unclear") continue;
 
 		if (!instancesByLabel.has(label)) {
 			instancesByLabel.set(label, []);

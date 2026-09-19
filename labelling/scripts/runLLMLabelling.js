@@ -15,6 +15,7 @@ const currentFile = fileURLToPath(import.meta.url);
 const rootDir = path.resolve(path.dirname(currentFile), '../..');
 const datasetName = `dataset_${dataset}`;
 const inputDir = path.join(rootDir, 'intermediate', 'deterministic_output', datasetName);
+fs.mkdirSync(inputDir, { recursive: true });
 const inputFiles = fs.readdirSync(inputDir)
 	.filter((fileName) => fileName.endsWith('.jsonl'))
 	.sort();
